@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Wraive</string>
+    <string name="generation_channel">AI 生成</string>
+    <string name="generating_reply">正在生成回复</string>
+</resources>
