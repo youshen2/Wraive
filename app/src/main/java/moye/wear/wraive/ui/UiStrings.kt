@@ -27,6 +27,7 @@ private val englishStrings = mapOf(
     "拉取模型列表或手动添加模型。" to "Fetch the model list or add a model manually.",
     "参考与致谢" to "Acknowledgements",
     "本应用参考了 Kelivo 项目，感谢其带来的启发。" to "This app draws inspiration from the Kelivo project. Thank you for the inspiration.",
+    "本应用使用了 miwearhaptics 项目以提供小米手表5(国内版)震动库的兼容。" to "This app uses the miwearhaptics project to provide compatibility with the haptic library on the Xiaomi Watch 5 (CN Version).",
     "返回" to "Back",
     "菜单" to "Menu",
     "打开菜单" to "Open menu",

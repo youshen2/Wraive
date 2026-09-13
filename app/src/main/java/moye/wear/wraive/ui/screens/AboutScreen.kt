@@ -72,6 +72,13 @@ fun AboutScreen() {
                     color = MaterialTheme.colorScheme.onSurface)
             }
         }
+        item(key = "miwearhaptics-credit") {
+            AboutPanel("miwearhaptics", Icons.Default.Code) {
+                Text(tr("本应用使用了 miwearhaptics 项目以提供小米手表5(国内版)震动库的兼容。"),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface)
+            }
+        }
         item(key = "changelog-section") { AboutSectionLabel("版本记录") }
         item(key = "changelog") {
             AboutPanel("更新内容", Icons.Default.History) {
