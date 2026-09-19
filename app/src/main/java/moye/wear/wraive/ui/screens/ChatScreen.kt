@@ -59,7 +59,6 @@ import androidx.wear.compose.material3.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
-import androidx.wear.compose.foundation.rotary.RotaryScrollableDefaults
 import androidx.wear.compose.foundation.rotary.rotaryScrollable
 import androidx.wear.compose.foundation.requestFocusOnHierarchyActive
 import androidx.wear.compose.material3.ButtonDefaults
@@ -85,6 +84,7 @@ import moye.wear.wraive.model.TranscriptionEngine
 import moye.wear.wraive.ui.components.MessageBubble
 import moye.wear.wraive.ui.components.WearActionButton
 import moye.wear.wraive.ui.components.WearFisheyeScope
+import moye.wear.wraive.ui.components.rememberCompatibleRotaryBehavior
 import moye.wear.wraive.ui.tr
 
 @Composable
@@ -170,7 +170,7 @@ fun ChatScreen(
                     false
                 }
                 .requestFocusOnHierarchyActive()
-                .rotaryScrollable(RotaryScrollableDefaults.behavior(state), focusRequester),
+                .rotaryScrollable(rememberCompatibleRotaryBehavior(state), focusRequester),
             state = state,
             contentPadding = contentPadding,
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -205,6 +205,7 @@ fun ChatScreen(
                         showReasoning = showReasoning,
                         markdownEnabled = markdownEnabled,
                         onLongClick = { onMessageActions(message) },
+                        onReasoningExpanded = { followLatest = false },
                         modifier = Modifier.testTag("message-${message.id}").onSizeChanged {
                             if (message.id == messages.lastOrNull()?.id) lastMessageHeight = it.height
                         }
@@ -352,7 +353,7 @@ private fun ChatInputDialog(
                     contentPadding = contentPadding,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(7.dp),
-                    rotaryScrollableBehavior = RotaryScrollableDefaults.behavior(listState)
+                    rotaryScrollableBehavior = rememberCompatibleRotaryBehavior(listState)
                 ) {
                     with(WearFisheyeScope(this, transformationSpec, isRound)) {
                         item {

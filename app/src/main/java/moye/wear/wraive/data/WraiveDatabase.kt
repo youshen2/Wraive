@@ -60,17 +60,30 @@ class WraiveDatabase(context: Context) : SQLiteOpenHelper(
         val selection = if (parentId == null) "kind = ?" else "kind = ? AND parent_id = ?"
         val args = if (parentId == null) arrayOf(kind) else arrayOf(kind, parentId)
         val order = if (kind == KIND_MESSAGE) "updated_at ASC" else "sort_order ASC, updated_at DESC"
-        return readableDatabase.query(
+        val db = readableDatabase
+        return db.query(
             "entities",
-            arrayOf("payload"),
+            // Keep oversized JSON out of CursorWindow, including rows written by older versions.
+            arrayOf("id", "CASE WHEN length(payload) <= $INLINE_PAYLOAD_LIMIT THEN payload END"),
             selection,
             args,
             null,
             null,
             order
         ).use { cursor ->
-            buildList {
-                while (cursor.moveToNext()) add(cursor.getString(0))
+            db.compileStatement("SELECT payload FROM entities WHERE kind = ? AND id = ?").use { statement ->
+                statement.bindString(1, kind)
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(if (cursor.isNull(1)) {
+                            statement.bindString(2, cursor.getString(0))
+                            // A scalar query returns the string directly, without a CursorWindow.
+                            statement.simpleQueryForString()
+                        } else {
+                            cursor.getString(1)
+                        })
+                    }
+                }
             }
         }
     }
@@ -122,5 +135,6 @@ class WraiveDatabase(context: Context) : SQLiteOpenHelper(
         const val KIND_NETWORK_PROXY = "network_proxy"
         const val KIND_TRANSCRIPTION_CONFIG = "transcription_config"
         private const val DATABASE_VERSION = 1
+        private const val INLINE_PAYLOAD_LIMIT = 64 * 1024
     }
 }

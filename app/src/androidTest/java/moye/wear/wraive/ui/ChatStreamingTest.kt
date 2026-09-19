@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.wear.compose.material3.AppScaffold
@@ -22,6 +23,49 @@ import org.junit.Test
 
 class ChatStreamingTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test
+    fun longMarkdownReplyCanBeOpened() = openLongReply(markdownEnabled = true)
+
+    @Test
+    fun longPlainTextReplyCanBeOpened() = openLongReply(markdownEnabled = false)
+
+    @Test
+    fun longCodeReplyCanBeOpened() = openLongReply(
+        markdownEnabled = true,
+        content = "```kotlin\nval text = \"" + "长文本".repeat(5_000) + "\"\n```"
+    )
+
+    @Test
+    fun veryTallReplyCanBeOpened() = openLongReply(
+        markdownEnabled = true,
+        content = "这是一条需要完整保留的回复。\n".repeat(6_000)
+    )
+
+    private fun openLongReply(
+        markdownEnabled: Boolean,
+        content: String = "这是一条较长的回复，包含需要完整保留的会话内容。\n".repeat(1_000)
+    ) {
+        val conversation = Conversation(id = "long-chat", assistantId = "assistant")
+        val message = ChatMessage(
+            id = "long-reply", conversationId = conversation.id, role = MessageRole.ASSISTANT,
+            content = content
+        )
+        compose.setContent {
+            WraiveTheme(dynamicColor = false, localeTag = "zh") {
+                AppScaffold {
+                    ChatScreen(conversation, listOf(message), emptyList(), false, true, markdownEnabled,
+                        readAttachment = { emptyList() }, transcriptionConfig = TranscriptionConfig(),
+                        startRecording = {}, stopAndTranscribe = { "" }, cancelRecording = {},
+                        onSend = { _, _ -> }, onStop = {}, onMessageActions = {})
+                }
+            }
+        }
+        compose.waitForIdle()
+        compose.onNodeWithTag("chat-bottom").assertIsDisplayed()
+        compose.onNodeWithTag("chat-list").performScrollToIndex(1)
+        compose.onNodeWithTag("message-long-reply").assertIsDisplayed()
+    }
 
     @Test
     fun streamedGrowthKeepsTheBottomStableAndRespectsReadingPosition() {

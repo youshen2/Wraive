@@ -30,7 +30,6 @@ import androidx.wear.compose.foundation.lazy.TransformingLazyColumnItemScope
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumnScope
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumnState
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
-import androidx.wear.compose.foundation.rotary.RotaryScrollableDefaults
 import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.ButtonDefaults
 import androidx.wear.compose.material3.EdgeButton
@@ -129,7 +128,7 @@ fun WearListScreen(
             contentPadding = contentPadding,
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(6.dp),
-            rotaryScrollableBehavior = RotaryScrollableDefaults.behavior(scrollState)
+            rotaryScrollableBehavior = rememberCompatibleRotaryBehavior(scrollState)
         ) {
             with(WearFisheyeScope(this, transformationSpec, isRound)) {
                 item(key = "screen-title") {

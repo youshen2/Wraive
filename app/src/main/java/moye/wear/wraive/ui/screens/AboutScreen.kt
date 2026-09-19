@@ -77,9 +77,8 @@ fun AboutScreen() {
             AboutPanel("更新内容", Icons.Default.History) {
                 Text("v${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 2.dp))
-                ChangelogBulletItem("首页会话列表与底部菜单")
-                ChangelogBulletItem("设置分组、选择器与确认对话框")
-                ChangelogBulletItem("优化 AI 流式回复的滚动稳定性")
+                ChangelogBulletItem("适配了小米Watch5")
+                ChangelogBulletItem("修改了部分UI")
             }
         }
         item(key = "footer") {

@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Code
@@ -51,7 +52,9 @@ fun ConversationsScreen(
     onActions: (Conversation) -> Unit,
     onDelete: (Conversation) -> Unit,
     archived: Boolean = false,
-    onMenu: (() -> Unit)? = null
+    onMenu: (() -> Unit)? = null,
+    onNewConversation: (() -> Unit)? = null,
+    newConversationHint: String? = null
 ) {
     val listState = rememberTransformingLazyColumnState()
     val scope = rememberCoroutineScope()
@@ -70,12 +73,23 @@ fun ConversationsScreen(
             }
         }
     ) {
+        if (!archived && onNewConversation != null) {
+            item(key = "new-conversation") {
+                WearActionButton(
+                    label = "新对话",
+                    onClick = onNewConversation,
+                    icon = Icons.Default.Add,
+                    primary = true,
+                    secondary = newConversationHint
+                )
+            }
+        }
         if (conversations.isEmpty()) {
             item {
                 if (archived) {
                     WearInfoCard("还没有归档会话", "归档后的会话会显示在这里。")
                 } else {
-                    WearInfoCard("还没有会话", "点击底部菜单，开始第一段对话。")
+                    WearInfoCard("还没有会话", "点击上方新对话，开始第一段对话。")
                 }
             }
         }

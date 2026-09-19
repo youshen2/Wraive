@@ -62,8 +62,10 @@ class NavigationUiTest {
                     AppScaffold { AppNavigation(graph) }
                 }
             }
-            compose.onNodeWithText("会话 1").assertIsDisplayed()
+            compose.onNodeWithText("新对话").assertIsDisplayed()
             capture("home")
+            scrollToText("会话 1")
+            compose.onNodeWithText("会话 1").assertIsDisplayed()
             scrollToText("会话 6")
             compose.onNodeWithText("会话 6").assertIsDisplayed()
             scrollToEdge("打开菜单")

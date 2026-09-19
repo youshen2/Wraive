@@ -22,6 +22,7 @@ import androidx.wear.compose.material3.Icon
 import androidx.wear.compose.material3.IconButtonDefaults
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.Text
+import moye.wear.wraive.compat.DeviceCompatibility
 import moye.wear.wraive.ui.tr
 
 @Composable
@@ -33,6 +34,10 @@ fun ConfirmActionDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
+    if (DeviceCompatibility.isXiaomiWatch5) {
+        Watch5ConfirmDialog(visible, title, message, confirmLabel, onDismiss, onConfirm)
+        return
+    }
     AlertDialog(
         visible = visible,
         onDismissRequest = onDismiss,

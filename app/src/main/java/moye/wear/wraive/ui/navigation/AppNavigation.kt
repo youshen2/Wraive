@@ -26,13 +26,17 @@ import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import kotlinx.coroutines.launch
 import moye.wear.wraive.AppGraph
 import moye.wear.wraive.audio.SpeechController
+import moye.wear.wraive.compat.DeviceCompatibility
 import moye.wear.wraive.model.ChatMessage
 import moye.wear.wraive.model.AttachmentKind
+import moye.wear.wraive.model.AssistantProfile
 import moye.wear.wraive.model.Conversation
 import moye.wear.wraive.model.MessageRole
 import moye.wear.wraive.model.MessageStatus
+import moye.wear.wraive.model.ProviderConfig
 import moye.wear.wraive.ui.components.WearListScreen
 import moye.wear.wraive.ui.components.LocalWearBackAction
+import moye.wear.wraive.ui.components.WearSelectionDialog
 import moye.wear.wraive.ui.screens.AppearanceScreen
 import moye.wear.wraive.ui.screens.AboutScreen
 import moye.wear.wraive.ui.screens.SettingsSection
@@ -91,6 +95,23 @@ fun AppNavigation(graph: AppGraph) {
     val speech = remember { SpeechController(context, graph.httpClient, graph.gson) }
     DisposableEffect(Unit) { onDispose { speech.close() } }
 
+    val readyProviderIds = providers
+        .filter { it.enabled && it.baseUrl.isNotBlank() }
+        .mapTo(mutableSetOf(), ProviderConfig::id)
+    val readyModels = models.filter { it.enabled && it.providerId in readyProviderIds }
+    val readyAssistants = assistants.filter { assistant ->
+        assistant.model?.let { selected ->
+            readyModels.any { it.providerId == selected.providerId && it.id == selected.modelId }
+        } == true
+    }
+    val newConversationHint = when {
+        readyModels.isEmpty() -> "先连接模型服务"
+        readyAssistants.isEmpty() -> "先为助手选择模型"
+        else -> null
+    }
+    var choosingAssistant by remember { mutableStateOf(false) }
+    var newConversationTemporary by remember { mutableStateOf(false) }
+
     fun openNewConversation(assistantId: String, temporary: Boolean) {
         val assistant = assistants.firstOrNull { it.id == assistantId } ?: return
         if (assistant.model == null) {
@@ -107,6 +128,18 @@ fun AppNavigation(graph: AppGraph) {
         }
     }
 
+    fun startConversation(temporary: Boolean) {
+        when {
+            readyModels.isEmpty() -> navController.navigate(Routes.PROVIDERS)
+            readyAssistants.isEmpty() -> navController.navigate(Routes.ASSISTANTS)
+            readyAssistants.size == 1 -> openNewConversation(readyAssistants.first().id, temporary)
+            else -> {
+                newConversationTemporary = temporary
+                choosingAssistant = true
+            }
+        }
+    }
+
     fun deleteConversation(conversation: Conversation) {
         scope.launch {
             graph.repository.deleteConversation(conversation.id)
@@ -119,7 +152,8 @@ fun AppNavigation(graph: AppGraph) {
     CompositionLocalProvider(LocalWearBackAction provides { navController.popBackStack() }) {
         SwipeDismissableNavHost(
             navController = navController,
-            startDestination = Routes.HOME
+            startDestination = Routes.HOME,
+            userSwipeEnabled = DeviceCompatibility.supportsSwipeToDismiss
         ) {
             composable(Routes.HOME) {
                 ConversationsScreen(
@@ -128,17 +162,16 @@ fun AppNavigation(graph: AppGraph) {
                     onOpen = { navController.navigate("${Routes.CHAT}/${it.id}") },
                     onActions = { navController.navigate("${Routes.CONVERSATION_ACTIONS}/${it.id}") },
                     onDelete = ::deleteConversation,
-                    onMenu = { navController.navigate(Routes.MENU) }
+                    onMenu = { navController.navigate(Routes.MENU) },
+                    onNewConversation = { startConversation(false) },
+                    newConversationHint = newConversationHint
                 )
             }
             composable(Routes.MENU) {
                 MainMenuScreen(
-                    assistants = assistants,
-                    providers = providers,
-                    models = models,
-                    onNewConversation = { assistant, temporary -> openNewConversation(assistant.id, temporary) },
+                    onNewConversation = ::startConversation,
+                    newConversationHint = newConversationHint,
                     onOpenArchive = { navController.navigate(Routes.ARCHIVE) },
-                    onOpenProviders = { navController.navigate(Routes.PROVIDERS) },
                     onOpenAssistants = { navController.navigate(Routes.ASSISTANTS) },
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) }
                 )
@@ -556,6 +589,17 @@ fun AppNavigation(graph: AppGraph) {
             composable(Routes.APPEARANCE) {
                 AppearanceScreen(preferences, graph.preferences::update)
             }
+        }
+        readyAssistants.firstOrNull()?.let { firstAssistant ->
+            WearSelectionDialog(
+                visible = choosingAssistant,
+                title = "选择助手",
+                selected = firstAssistant,
+                options = readyAssistants,
+                onDismiss = { choosingAssistant = false },
+                onSelect = { openNewConversation(it.id, newConversationTemporary) },
+                optionLabel = AssistantProfile::name
+            )
         }
     }
 }
