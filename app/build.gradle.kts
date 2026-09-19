@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    id("cc.star0.wear.lib.miwearhaptics")
 }
 
 android {

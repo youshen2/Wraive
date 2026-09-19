@@ -90,6 +90,8 @@ app/src/main/res/    Android 资源与自适应图标
 
 本项目参考了 [Kelivo](https://github.com/Chevey339/kelivo)，感谢其带来的启发。
 
+本项目使用了 [miwearhaptics](https://github.com/Star-ZER0/miwearhaptics) 项目以提供小米手表5(国内版)震动库的兼容。
+
 ## 许可证
 
 Copyright (C) 2026 爅峫。
